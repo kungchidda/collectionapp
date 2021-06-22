@@ -41,6 +41,7 @@ app.use(awsServerlessExpressMiddleware.eventContext())
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*")
   res.header("Access-Control-Allow-Headers", "*")
+  res.header("Access-Control-Allow-Methods", "*")
   next()
 });
 
@@ -58,29 +59,50 @@ const convertUrlType = (param, type) => {
  * HTTP Get method for list objects *
  ********************************/
 
-app.get(path + hashKeyPath, function(req, res) {
-  var condition = {}
-  condition[partitionKeyName] = {
-    ComparisonOperator: 'EQ'
-  }
+ app.get(path, function (req, res) {
+// app.get(path + hashKeyPath, function(req, res) {
+  // var condition = {}
+  // condition[partitionKeyName] = {
+  //   ComparisonOperator: 'EQ'
+  // }
 
-  if (userIdPresent && req.apiGateway) {
-    condition[partitionKeyName]['AttributeValueList'] = [req.apiGateway.event.requestContext.identity.cognitoIdentityId || UNAUTH ];
-  } else {
-    try {
-      condition[partitionKeyName]['AttributeValueList'] = [ convertUrlType(req.params[partitionKeyName], partitionKeyType) ];
-    } catch(err) {
-      res.statusCode = 500;
-      res.json({error: 'Wrong column type ' + err});
+  // if (userIdPresent && req.apiGateway) {
+  //   condition[partitionKeyName]['AttributeValueList'] = [req.apiGateway.event.requestContext.identity.cognitoIdentityId || UNAUTH ];
+  // } else {
+  //   try {
+  //     condition[partitionKeyName]['AttributeValueList'] = [ convertUrlType(req.params[partitionKeyName], partitionKeyType) ];
+  //   } catch(err) {
+  //     res.statusCode = 500;
+  //     res.json({error: 'Wrong column type ' + err});
+  //   }
+  // }
+
+  // let queryParams = {
+  //   TableName: tableName,
+  //   KeyConditions: condition
+  // }
+  var upperId = null
+  let queryParams = null
+  if (req.query.upperId) {
+    upperId = req.query.upperId
+    queryParams = {
+      TableName: tableName,
+      ProjectionExpression: 'id, title, upperId',
+      FilterExpression: "upperId = :upperId",
+      ExpressionAttributeValues: {
+        ":upperId": upperId
+      }
     }
+  } else {
+    queryParams = {
+      TableName: tableName,
+      ProjectionExpression: 'id, title, upperId'
+    }
+
   }
 
-  let queryParams = {
-    TableName: tableName,
-    KeyConditions: condition
-  }
-
-  dynamodb.query(queryParams, (err, data) => {
+  // dynamodb.query(queryParams, (err, data) => {
+    dynamodb.scan(queryParams, (err, data) => {
     if (err) {
       res.statusCode = 500;
       res.json({error: 'Could not load items: ' + err});
