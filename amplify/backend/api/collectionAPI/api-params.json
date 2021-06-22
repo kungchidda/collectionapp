@@ -1,0 +1,35 @@
+{
+  "paths": [
+    {
+      "name": "/collection",
+      "lambdaFunction": "collectionLambda",
+      "privacy": {
+        "open": true
+      },
+      "policyResourceName": "/collection"
+    }
+  ],
+  "resourceName": "collectionAPI",
+  "apiName": "collectionAPI",
+  "functionArns": [
+    {
+      "lambdaFunction": "collectionLambda"
+    }
+  ],
+  "privacy": {
+    "auth": 0,
+    "unauth": 0,
+    "authRoleName": "amplify-collectionapp-dev-181251-authRole",
+    "unAuthRoleName": "amplify-collectionapp-dev-181251-unauthRole"
+  },
+  "dependsOn": [
+    {
+      "category": "function",
+      "resourceName": "collectionLambda",
+      "attributes": [
+        "Name",
+        "Arn"
+      ]
+    }
+  ]
+}
